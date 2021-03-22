@@ -1,12 +1,11 @@
-from lexer.queue_token import QueueToken
-from lexer.directive import Directive
-from lexer.space import Space
+from command_handler import CommandHandler
 
-queue = QueueToken()
-d = Directive()
-d.set_coordinates(1)
-queue.append_token(d)
-s = Space()
-queue.append_token(s)
-list = queue.get_queue()
-print(list[1].get_coordinates())
+def console():
+    print("Available commands:")
+    print()
+    print("lexer [filename]")
+    command = input(">")
+    CommandHandler().execute_command(command)
+
+if __name__ == '__main__':
+    console()

@@ -1,3 +1,3 @@
 class Lexer:
-    def __init__(self):
-        self.a = 0
+    def __init__(self, path):
+        self.path = path

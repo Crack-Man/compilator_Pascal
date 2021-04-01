@@ -13,7 +13,10 @@ class CommandHandler:
         if command_lower == "lexer":
             if len(command_split) > 1:
                 if os.path.isfile(command_split[1]):
-                    Lexer(command_split[1])
+                    try:
+                        Lexer(command_split[1])
+                    except UnicodeDecodeError as e:
+                        print("'utf-8' codec can't decode byte")
                 else:
                     print("File not found.")
             else:

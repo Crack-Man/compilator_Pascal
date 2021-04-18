@@ -2,17 +2,17 @@ from command_handler import CommandHandler
 from lexer.lexer import Lexer
 
 #COMMANDS
-#lexer C:\Users\VITZ\Desktop\tester.pas
-#lexer C:\Users\VITZ\Desktop\tester.txt
-#lexer C:\Users\Crack\Desktop\test.txt
+#compiler -l -f C:\Users\VITZ\Desktop\tester.pas
+#compiler -l -f C:\Users\VITZ\Desktop\tester.txt
+#compiler -l -f C:\Users\Crack\Desktop\test.txt
 
-#lexers C:\Users\VITZ\Desktop\КОД
+#compiler -l -d C:\Users\VITZ\Desktop\КОД
 
 def console():
     print("Available commands:")
     print()
-    print("lexer [filename]")
-    print("lexers [dirname]")
+    print("compiler -l -f [filename]")
+    print("compiler -l -d [dirname]")
     command = input(">")
     CommandHandler().execute_command(command)
 

@@ -8,6 +8,7 @@ class Lexer:
                          "in", "inherited", "inline", "interface", "label", "library", "mod", "nil", "not", "object",
                          "of", "or", "packed", "procedure", "program", "record", "repeat", "set", "shl", "shr",
                          "string", "then", "to", "type", "unit", "until", "uses", "var", "while", "with", "xor"}
+        # predefined - предописанные слова
         self.predefined = {"abs", "arctan", "boolean", "char", "chr", "cos", "dispose", "eoln", "exp",
                            "false", "get", "input", "integer", "ln", "maxint", "new", "odd", "ord", "output",
                            "pack", "page", "pred", "put", "read", "readln", "real", "reset", "rewrite", "round",
@@ -76,17 +77,18 @@ class Lexer:
                     self.addBuf(self.symbol)
                     self.getNext()
                 elif self.symbol in self.separators:
-                    self.keepCoordinates()
                     self.state = "Separator"
+                    self.keepCoordinates()
                     self.addBuf(self.symbol)
                     self.getNext()
                 else:
                     self.state = "Error"
+                    self.keepCoordinates()
                     self.addBuf(self.symbol)
                     self.getNext()
 
             elif self.state == "Identifier":
-                if self.symbol.isdigit() or self.symbol.isalpha():
+                if self.symbol.isdigit() or self.symbol.isalpha() or self.symbol == "_":
                     self.addBuf(self.symbol)
                     if self.buf.lower() in self.eof:
                         self.state = "Final"

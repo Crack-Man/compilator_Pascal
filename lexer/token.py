@@ -1,11 +1,5 @@
 class Token:
-    def __init__(self):
-        self.coordinates = ""
-        self.type = ""
-        self.code = ""
-        self.value = ""
-
-    def setParams(self, coordinates, type, code, value):
+    def __init__(self, coordinates, type, code, value):
         self.coordinates = coordinates
         self.type = type
         self.code = code
@@ -14,7 +8,10 @@ class Token:
     def getCoordinates(self):
         return self.coordinates
 
+    def notEOF(self):
+        return self.type != "EOF"
+
     def getParams(self):
-        if self.coordinates:
-            return '{}        {}        "{}"        {}'.format(self.coordinates, self.type, self.code, self.value)
+        if self.notEOF():
+            return f'{self.coordinates}        {self.type}        "{self.code}"        {self.value}'
         return ''

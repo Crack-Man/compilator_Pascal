@@ -1,5 +1,4 @@
 from command_handler import CommandHandler
-from lexer.lexer import Lexer
 
 #COMMANDS
 #compiler -l -f C:\Users\VITZ\Desktop\tester.pas
@@ -14,7 +13,7 @@ def console():
     print("compiler -l -f [filename]")
     print("compiler -l -d [dirname]")
     command = input(">")
-    CommandHandler().execute_command(command)
+    CommandHandler().executeCommand(command)
 
 if __name__ == '__main__':
     console()

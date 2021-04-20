@@ -58,11 +58,11 @@ class CommandHandler:
             print(f"\nВсего тестов: {self.count_all}\nИз них успешных: {self.count_all - self.count_failed}")
 
     def testFile(self, file, path):
-        if file.find("(result)") == -1 and file != "log.txt":
+        if file[len(file) - 10:] == "(code).txt" and file != "log.txt":
             self.count_all += 1
             split_file = os.path.splitext(path)
             lexer = Lexer(path)
-            file_res = open(f"{split_file[0]} (result){split_file[1]}", "r", encoding="utf-8")
+            file_res = open(split_file[0][:len(split_file[0]) - 7] + split_file[1], "r", encoding="utf-8")
             self.passed = True
             try:
                 lex = lexer.getLexem()

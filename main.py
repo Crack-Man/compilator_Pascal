@@ -5,7 +5,8 @@ from command_handler import CommandHandler
 #compiler -l -f C:\Users\VITZ\Desktop\tester.txt
 #compiler -l -f C:\Users\Crack\Desktop\test.txt
 
-#compiler -l -d C:\Users\VITZ\Desktop\КОД
+#compiler -l -d C:\Users\VITZ\Desktop\тесты
+#compiler -l -d C:\Users\VITZ\Desktop\тесты-2
 
 def console():
     print("Available commands:")

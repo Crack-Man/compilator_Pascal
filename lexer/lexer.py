@@ -25,9 +25,9 @@ class Lexer:
         self.file = open(self.path, "r", encoding="utf-8")
         self.symbol = self.file.read(1)
 
-        self.reserved = {"and", "array", "asm", "begin", "case", "const", "consatructor", "destructor", "div", "do",
+        self.reserved = {"and", "array", "asm", "begin", "case", "const", "consatructor", "destructor", "do",
                          "downto", "else", "end", "exports", "file", "for", "function", "goto", "if", "implementation",
-                         "in", "inherited", "inline", "interface", "label", "library", "mod", "nil", "not", "object",
+                         "in", "inherited", "inline", "interface", "label", "library", "nil", "not", "object",
                          "of", "or", "packed", "procedure", "program", "record", "repeat", "set", "shl", "shr",
                          "string", "then", "to", "type", "unit", "until", "uses", "var", "while", "with", "xor"}
         # predefined - предописанные слова
@@ -36,7 +36,9 @@ class Lexer:
                            "pack", "page", "pred", "put", "read", "readln", "real", "reset", "rewrite", "round",
                            "sin", "sqr", "sqrt", "succ", "text", "true", "trunc", "unpack", "write", "writeln"}
         self.space_symbols = {'', ' ', '\n', '\t', '\0', '\r'}
-        self.operations = {'+', '-', '*', '/', '=', '<', '>', "**", ">=", "<="}
+        self.operations = {'+', '-', '*', '/', '=', '<', '>', "div", "mod"}
+        self.operations_arr = {'+', '-', '*', '/'}
+        self.operations_bool = {'>', '<'}
         self.assignments = {":=", "+=", "-=", "*=", "/="}
         self.separators = {'.', ',', ':', ';', '(', ')', '[', ']', ".."}
 
@@ -77,6 +79,8 @@ class Lexer:
                         type_lexem = States.reserved.value
                     elif self.buf.lower() in self.predefined:
                         type_lexem = States.predefined.value
+                    elif self.buf.lower() in self.operations:
+                        type_lexem = States.operation.value
                     return Token(self.coordinates, type_lexem, self.buf, self.buf)
 
             elif self.state == States.integer:
@@ -177,16 +181,13 @@ class Lexer:
                     return Token(self.coordinates, States.string.value, self.buf, self.buf)
 
             elif self.state == States.operation:
-                if self.symbol in self.operations:
-                    self.keepSymbol()
-                else:
-                    if self.buf in self.operations or self.buf in self.assignments:
-                        self.state = States.any
-                        type_lexem = States.operation.value if self.buf in self.operations else States.assignment.value
-                        return Token(self.coordinates, type_lexem, self.buf, self.buf)
-                    else:
-                        self.state = States.error
+                if (self.buf in self.operations_arr or self.buf in self.operations_bool) and self.symbol == '=' \
+                    or self.buf == '*' and self.symbol == '*':
                         self.keepSymbol()
+                else:
+                    self.state = States.any
+                    type_lexem = States.assignment.value if self.buf in self.assignments else States.operation.value
+                    return Token(self.coordinates, type_lexem, self.buf, self.buf)
 
             elif self.state == States.separator:
                 self.state = States.any
@@ -198,7 +199,7 @@ class Lexer:
                     self.getSymbol()
                     return Token(self.coordinates, type_lexem, self.buf, self.buf)
                 elif self.buf == '.':
-                    if self.symbol in self.space_symbols or self.symbol in self.assignments:
+                    if self.symbol in self.space_symbols:
                         return Token(self.coordinates, type_lexem, self.buf, self.buf)
                     else:
                         self.state = States.error
@@ -242,7 +243,7 @@ class Lexer:
 
             elif self.state == States.error:
                 if self.symbol in self.space_symbols or self.symbol in self.separators:
-                    self.informError(f'{self.path}        {self.line}:{self.col}        Unexpected word "{self.buf}"\n')
+                    self.informError(f'{self.path}        {self.coordinates}        Unexpected word "{self.buf}"\n')
                 else:
                     self.keepSymbol()
         return Token("", "EOF", "", "")

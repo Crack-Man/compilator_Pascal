@@ -25,7 +25,7 @@ class Lexer:
         self.file = open(self.path, "r", encoding="utf-8")
         self.symbol = self.file.read(1)
 
-        self.reserved = {"and", "array", "asm", "begin", "case", "const", "consatructor", "destructor", "do",
+        self.reserved = {"and", "array", "asm", "begin", "case", "const", "constructor", "destructor", "do",
                          "downto", "else", "end", "exports", "file", "for", "function", "goto", "if", "implementation",
                          "in", "inherited", "inline", "interface", "label", "library", "nil", "not", "object",
                          "of", "or", "packed", "procedure", "program", "record", "repeat", "set", "shl", "shr",
@@ -100,10 +100,7 @@ class Lexer:
                     if -32768 <= int(self.buf) <= 32767:
                         return Token(self.coordinates, States.integer.value, self.buf, int(self.buf))
                     else:
-                        self.informError(
-                            f"{self.path}        {self.coordinates}        "
-                            f"Range check error while evaluating constants ({self.buf})\n"
-                        )
+                        self.informError(f"Range check error while evaluating constants: {self.buf}")
 
             elif self.state == States.real:
                 if self.symbol.isdigit():
@@ -115,7 +112,7 @@ class Lexer:
                     else:
                         self.state = States.error
                         self.keepSymbol()
-                elif self.symbol == '.' and self.buf[len(self.buf) - 1] == '.':
+                elif self.buf[len(self.buf) - 1] == '.' and self.symbol == '.':
                     self.state = States.any
                     self.buf = self.buf[:len(self.buf) - 1]
                     self.setUnget(".")
@@ -125,11 +122,7 @@ class Lexer:
                         self.state = States.any
                         if 2.9e-39 <= float(self.buf) <= 1.7e38:
                             return Token(self.coordinates, States.real.value, self.buf, float(self.buf))
-                        else:
-                            self.informError(
-                                f"{self.path}        {self.coordinates}        "
-                                f"Range check error while evaluating constants ({self.buf})\n"
-                            )
+                        self.informError(f"Range check error while evaluating constants: {self.buf}")
                     else:
                         self.state = States.error
                         self.keepSymbol()
@@ -160,19 +153,12 @@ class Lexer:
                     if 2.9e-39 <= float(self.buf) <= 1.7e38:
                         return Token(self.coordinates, States.real.value, self.buf, float(self.buf))
                     else:
-                        self.informError(
-                            f"{self.path}        {self.coordinates}        "
-                            f"Range check error while evaluating constants ({self.buf})\n"
-                        )
+                        self.informError(f"Range check error while evaluating constants ({self.buf})")
 
             elif self.state == States.string:
-                if self.symbol == '\n':
-                    self.state = States.error
-                elif self.symbol == '':
-                    self.informError(
-                        f'{self.path}        {self.line}:{self.col}        '
-                        f'End of file was encountered, but "\'" was expected in "{self.buf}"\n'
-                    )
+                if self.symbol == '' or self.symbol == '\n':
+                    end_of = "file" if self.symbol == '' else "line"
+                    self.informError(f'End of {end_of} was encountered, but "\'" was expected')
                 elif self.symbol != "'":
                     self.keepSymbol()
                 else:
@@ -221,11 +207,7 @@ class Lexer:
                     self.getSymbol()
                 elif self.symbol == '':
                     self.buf = self.buf.encode("unicode_escape").decode("utf-8")
-                    self.informError(
-                        f'{self.path}        {self.line}:{self.col}        ' +
-                        'End of file was encountered, but "}" ' +
-                        f'was expected in "{self.buf}"\n'
-                    )
+                    self.informError('End of file was encountered, but "}" was expected')
                 else:
                     self.keepSymbol()
 
@@ -243,24 +225,20 @@ class Lexer:
 
             elif self.state == States.error:
                 if self.symbol in self.space_symbols or self.symbol in self.separators:
-                    self.informError(f'{self.path}        {self.coordinates}        Unexpected word "{self.buf}"\n')
+                    self.informError(f'Syntax error: "{self.buf}"')
                 else:
                     self.keepSymbol()
         return Token("", "EOF", "", "")
 
     def informError(self, text):
-        self.error_lexem = Token(self.coordinates, States.error.value, self.buf, self.buf)
+        text = f'{self.path}        {self.coordinates}        ' + text
         raise RuntimeError(text)
 
-    def getErrorLexem(self):
-        return self.error_lexem
-
-    def keepSymbol(self, **kwargs):
-        if 'state' in kwargs:
-            self.state = kwargs['state']
-        if 'keep_coordinates' in kwargs:
-            if kwargs['keep_coordinates']:
-                self.keepCoordinates()
+    def keepSymbol(self, state=None, keep_coordinates=False):
+        if state:
+            self.state = state
+        if keep_coordinates:
+            self.keepCoordinates()
         self.addBuf()
         self.getSymbol()
 

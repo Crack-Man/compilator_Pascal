@@ -41,7 +41,6 @@ class CommandHandler:
                 print(f"{path} 'utf-8' codec can't decode byte")
             except RuntimeError as e:
                 print(e)
-                print(lexer.getErrorLexem())
 
     def compilerLexerDirectory(self, path):
         if os.path.isdir(path):
@@ -58,7 +57,7 @@ class CommandHandler:
             print(f"\nВсего тестов: {self.count_all}\nИз них успешных: {self.count_all - self.count_failed}")
 
     def testFile(self, file, path):
-        if file[len(file) - 10:] == "(code).txt" and file != "log.txt":
+        if file[len(file) - 10:] == "(code).txt":
             self.count_all += 1
             split_file = os.path.splitext(path)
             lexer = Lexer(path)
@@ -66,25 +65,20 @@ class CommandHandler:
             self.passed = True
             try:
                 lex = lexer.getLexem()
-                self.compareResult(lex, file_res)
+                self.compareResult(lex.getParams(), file_res)
                 while lex.notEOF():
                     lex = lexer.getLexem()
-                    self.compareResult(lex, file_res)
+                    self.compareResult(lex.getParams(), file_res)
             except RuntimeError as e:
-                self.error_list += str(e)
-                lex = lexer.getErrorLexem()
-                self.compareResult(lex, file_res)
+                self.compareResult(str(e), file_res)
             finally:
                 if not self.passed:
                     self.count_failed += 1
                 file_res.close()
                 print("{} - {}".format(file, "OK" if self.passed else "WRONG"))
-                with open(self.error_file, "w") as error_file:
-                    error_file.write(self.error_list)
 
     def compareResult(self, lexem, file):
         correct = file.readline().replace("\n", "")
-        lex = lexem.getParams()
-        if lex != correct:
+        if lexem != correct:
             self.passed = False
-            print(lex)
+            print(lexem)

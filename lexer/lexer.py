@@ -1,23 +1,5 @@
 from lexer.token import Token
-from enum import Enum
-
-class States(Enum):
-    any = "Any"
-    reserved = "Reserved Word"
-    predefined = "Predefined Word"
-    identifier = "Identifier"
-    integer = "Integer"
-    real = "Real"
-    real_e = "Real (Float Point): e"
-    real_plus_minus = "Real (Float Point): plus-minus"
-    real_degree = "Real (Float Point): degree"
-    string = "String"
-    operation = "Operation"
-    separator = "Separator"
-    assignment = "Assignment"
-    comment = "Comment"
-    directive = "Directive"
-    error = "Error"
+from lexer.token_list import TokenList
 
 class Lexer:
     def __init__(self, path):
@@ -42,167 +24,167 @@ class Lexer:
         self.assignments = {":=", "+=", "-=", "*=", "/="}
         self.separators = {'.', ',', ':', ';', '(', ')', '[', ']', ".."}
 
-        self.state = States.any
+        self.state = TokenList.any
         self.line, self.col = 1, 1
         self.buf, self.unget, self.coordinates = "", "", ""
 
-    def getLexem(self):
+    def getNextLexem(self):
         self.clearBuf()
         while self.symbol or self.buf:
-            if self.state == States.any:
+            if self.state == TokenList.any:
                 if self.symbol in self.space_symbols:
                     if self.symbol == "\n":
                         self.newLine()
                     self.getSymbol()
                 elif self.symbol.isalpha():
-                    self.keepSymbol(state=States.identifier, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.identifier, keep_coordinates=True)
                 elif self.symbol.isdigit():
-                    self.keepSymbol(state=States.integer, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.integer, keep_coordinates=True)
                 elif self.symbol == "'":
-                    self.keepSymbol(state=States.string, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.string, keep_coordinates=True)
                 elif self.symbol in self.operations:
-                    self.keepSymbol(state=States.operation, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.operation, keep_coordinates=True)
                 elif self.symbol == '{':
-                    self.keepSymbol(state=States.comment, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.comment, keep_coordinates=True)
                 elif self.symbol in self.separators:
-                    self.keepSymbol(state=States.separator, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.separator, keep_coordinates=True)
                 else:
-                    self.keepSymbol(state=States.error, keep_coordinates=True)
+                    self.keepSymbol(state=TokenList.error, keep_coordinates=True)
 
-            elif self.state == States.identifier:
+            elif self.state == TokenList.identifier:
                 if self.symbol.isdigit() or self.symbol.isalpha() or self.symbol == "_":
                     self.keepSymbol()
                 else:
-                    self.state = States.any
-                    type_lexem = States.identifier.value
+                    self.state = TokenList.any
+                    type_lexem = TokenList.identifier.value
                     if self.buf.lower() in self.reserved:
-                        type_lexem = States.reserved.value
+                        type_lexem = TokenList.reserved.value
                     elif self.buf.lower() in self.predefined:
-                        type_lexem = States.predefined.value
+                        type_lexem = TokenList.predefined.value
                     elif self.buf.lower() in self.operations:
-                        type_lexem = States.operation.value
-                    return Token(self.coordinates, type_lexem, self.buf, self.buf)
+                        type_lexem = TokenList.operation.value
+                    return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
 
-            elif self.state == States.integer:
+            elif self.state == TokenList.integer:
                 if self.symbol.isdigit():
                     self.keepSymbol()
                 elif self.symbol == ".":
-                    self.state = States.real
+                    self.state = TokenList.real
                     self.keepSymbol()
                 elif self.symbol.lower() == "e":
-                    self.state = States.real_e
+                    self.state = TokenList.real_e
                     self.keepSymbol()
                 elif self.symbol.isalpha():
-                    self.state = States.error
+                    self.state = TokenList.error
                     self.keepSymbol()
                 else:
-                    self.state = States.any
+                    self.state = TokenList.any
                     if -32768 <= int(self.buf) <= 32767:
-                        return Token(self.coordinates, States.integer.value, self.buf, int(self.buf))
+                        return self.returnedToken(self.coordinates, TokenList.integer.value, self.buf, int(self.buf))
                     else:
                         self.informError(f"Range check error while evaluating constants: {self.buf}")
 
-            elif self.state == States.real:
+            elif self.state == TokenList.real:
                 if self.symbol.isdigit():
                     self.keepSymbol()
                 elif self.symbol.lower() == "e":
                     if self.buf[len(self.buf) - 1] != '.':
-                        self.state = States.real_e
+                        self.state = TokenList.real_e
                         self.keepSymbol()
                     else:
-                        self.state = States.error
+                        self.state = TokenList.error
                         self.keepSymbol()
                 elif self.buf[len(self.buf) - 1] == '.' and self.symbol == '.':
-                    self.state = States.any
+                    self.state = TokenList.any
                     self.buf = self.buf[:len(self.buf) - 1]
                     self.setUnget(".")
-                    return Token(self.coordinates, States.integer.value, self.buf, int(self.buf))
+                    return self.returnedToken(self.coordinates, TokenList.integer.value, self.buf, int(self.buf))
                 else:
                     if self.buf[len(self.buf) - 1] != '.':
-                        self.state = States.any
+                        self.state = TokenList.any
                         if 2.9e-39 <= float(self.buf) <= 1.7e38:
-                            return Token(self.coordinates, States.real.value, self.buf, float(self.buf))
+                            return self.returnedToken(self.coordinates, TokenList.real.value, self.buf, float(self.buf))
                         self.informError(f"Range check error while evaluating constants: {self.buf}")
                     else:
-                        self.state = States.error
+                        self.state = TokenList.error
                         self.keepSymbol()
 
-            elif self.state == States.real_e:
+            elif self.state == TokenList.real_e:
                 if self.symbol == '+' or self.symbol == '-' or self.symbol.isdigit():
-                    self.state = States.real_degree if self.symbol.isdigit()\
-                        else States.real_plus_minus
+                    self.state = TokenList.real_degree if self.symbol.isdigit() \
+                        else TokenList.real_plus_minus
                     self.keepSymbol()
                 else:
-                    self.state = States.error
+                    self.state = TokenList.error
                     self.keepSymbol()
 
-            elif self.state == States.real_plus_minus:
+            elif self.state == TokenList.real_plus_minus:
                 if self.symbol.isdigit():
-                    self.state = States.real_degree
+                    self.state = TokenList.real_degree
                     self.addBuf()
                     self.getSymbol()
                 else:
-                    self.state = States.error
+                    self.state = TokenList.error
                     self.keepSymbol()
 
-            elif self.state == States.real_degree:
+            elif self.state == TokenList.real_degree:
                 if self.symbol.isdigit():
                     self.keepSymbol()
                 else:
-                    self.state = States.any
+                    self.state = TokenList.any
                     if 2.9e-39 <= float(self.buf) <= 1.7e38:
-                        return Token(self.coordinates, States.real.value, self.buf, float(self.buf))
+                        return self.returnedToken(self.coordinates, TokenList.real.value, self.buf, float(self.buf))
                     else:
                         self.informError(f"Range check error while evaluating constants ({self.buf})")
 
-            elif self.state == States.string:
+            elif self.state == TokenList.string:
                 if self.symbol == '' or self.symbol == '\n':
                     end_of = "file" if self.symbol == '' else "line"
                     self.informError(f'End of {end_of} was encountered, but "\'" was expected')
                 elif self.symbol != "'":
                     self.keepSymbol()
                 else:
-                    self.state = States.any
+                    self.state = TokenList.any
                     self.keepSymbol()
-                    return Token(self.coordinates, States.string.value, self.buf, self.buf)
+                    return self.returnedToken(self.coordinates, TokenList.string.value, self.buf, self.buf)
 
-            elif self.state == States.operation:
+            elif self.state == TokenList.operation:
                 if (self.buf in self.operations_arr or self.buf in self.operations_bool) and self.symbol == '=' \
-                    or self.buf == '*' and self.symbol == '*':
-                        self.keepSymbol()
+                        or self.buf == '*' and self.symbol == '*':
+                    self.keepSymbol()
                 else:
-                    self.state = States.any
-                    type_lexem = States.assignment.value if self.buf in self.assignments else States.operation.value
-                    return Token(self.coordinates, type_lexem, self.buf, self.buf)
+                    self.state = TokenList.any
+                    type_lexem = TokenList.assignment.value if self.buf in self.assignments else TokenList.operation.value
+                    return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
 
-            elif self.state == States.separator:
-                self.state = States.any
-                type_lexem = States.separator.value
+            elif self.state == TokenList.separator:
+                self.state = TokenList.any
+                type_lexem = TokenList.separator.value
                 if self.buf == '.' and self.symbol == '.' or self.buf == ':' and self.symbol == '=':
                     self.addBuf()
                     if self.buf == ":=":
-                        type_lexem = States.assignment.value
+                        type_lexem = TokenList.assignment.value
                     self.getSymbol()
-                    return Token(self.coordinates, type_lexem, self.buf, self.buf)
+                    return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
                 elif self.buf == '.':
                     if self.symbol in self.space_symbols:
-                        return Token(self.coordinates, type_lexem, self.buf, self.buf)
+                        return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
                     else:
-                        self.state = States.error
+                        self.state = TokenList.error
                         self.keepSymbol()
                 else:
-                    return Token(self.coordinates, type_lexem, self.buf, self.buf)
+                    return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
 
-            elif self.state == States.comment:
+            elif self.state == TokenList.comment:
                 if self.symbol == "$" and len(self.buf) == 1:
-                    self.state = States.directive
+                    self.state = TokenList.directive
                     self.keepSymbol()
                 elif self.symbol == "\n":
                     self.addBuf()
                     self.newLine()
                     self.getSymbol()
                 elif self.symbol == "}":
-                    self.state = States.any
+                    self.state = TokenList.any
                     self.clearBuf()
                     self.getSymbol()
                 elif self.symbol == '':
@@ -211,24 +193,24 @@ class Lexer:
                 else:
                     self.keepSymbol()
 
-            elif self.state == States.directive:
+            elif self.state == TokenList.directive:
                 if self.symbol == "\n":
                     self.addBuf()
                     self.newLine()
                     self.getSymbol()
                 elif self.symbol == "}":
-                    self.state = States.any
+                    self.state = TokenList.any
                     self.keepSymbol()
-                    return Token(self.coordinates, States.directive.value, self.buf, self.buf)
+                    return self.returnedToken(self.coordinates, TokenList.directive.value, self.buf, self.buf)
                 else:
                     self.keepSymbol()
 
-            elif self.state == States.error:
+            elif self.state == TokenList.error:
                 if self.symbol in self.space_symbols or self.symbol in self.separators:
                     self.informError(f'Syntax error: "{self.buf}"')
                 else:
                     self.keepSymbol()
-        return Token("", "EOF", "", "")
+        return self.returnedToken("", "EOF", "End of file", "End of file")
 
     def informError(self, text):
         text = f'{self.path}        {self.coordinates}        ' + text
@@ -266,3 +248,10 @@ class Lexer:
 
     def addBuf(self):
         self.buf += self.symbol
+
+    def returnedToken(self, coordinates, type, code, value):
+        self.token = Token(coordinates, type, code, value)
+        return self.token
+
+    def getCurrentLexem(self):
+        return self.token

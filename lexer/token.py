@@ -8,10 +8,19 @@ class Token:
     def getCoordinates(self):
         return self.coordinates
 
-    def notEOF(self):
-        return self.type != "EOF"
+    def getType(self):
+        return self.type
+
+    def getCode(self):
+        return self.code
+
+    def getValue(self):
+        return self.value
 
     def getParams(self):
         if self.notEOF():
             return f'{self.coordinates}        {self.type}        "{self.code}"        {self.value}'
         return ''
+
+    def notEOF(self):
+        return self.type != "EOF"

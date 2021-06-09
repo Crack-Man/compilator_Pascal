@@ -9,6 +9,10 @@ from command_handler import CommandHandler
 #compiler -l -d C:\Users\VITZ\Desktop\Тесты-2
 #compiler -l -d C:\Users\Crack\Desktop\Тесты
 
+#compiler -p -f C:\Users\VITZ\Desktop\tester.txt
+
+#compiler -p -d C:\Users\VITZ\Desktop\Parser
+
 def console():
     print("Available commands:")
     print()

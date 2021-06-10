@@ -17,6 +17,10 @@ class Token:
     def getValue(self):
         return self.value
 
+    def negativeValue(self):
+        if type(self.value) == int or type(self.value) == float:
+            self.value *= -1
+
     def getParams(self):
         if self.notEOF():
             return f'{self.coordinates}        {self.type}        "{self.code}"        {self.value}'

@@ -9,6 +9,8 @@ class Parser:
         self.lexer.getNextLexem()
 
     def parseExpr(self):
+        if not self.lexer.getCurrentLexem().notEOF():
+            return ""
         left = self.parseTerm()
         operation = self.lexer.getCurrentLexem()
         while operation.getValue() == "+" or operation.getValue() == "-":
@@ -34,6 +36,15 @@ class Parser:
         if token.getType() == TokenList.identifier.value:
             return IdntNode(token)
         if token.getType() == TokenList.integer.value:
+            return IntNode(token)
+        if token.getValue() == "-":
+            i = 0
+            while token.getValue() == "-":
+                token = self.lexer.getCurrentLexem()
+                i += 1
+                self.lexer.getNextLexem()
+            if i % 2 == 1:
+                token.negativeValue()
             return IntNode(token)
         if token.getValue() == "(":
             left = self.parseExpr()

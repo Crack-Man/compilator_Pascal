@@ -3,5 +3,4 @@
 ***
 **Автор**: Горбунов Антон
 
-## Лексический анализатор
-Ссылка на тесты: https://drive.google.com/drive/folders/11D6fHdEXiYjcMQi_K8gfztIPSaVNHYow?usp=sharing
+Ссылка на тесты: https://drive.google.com/drive/folders/1JQnNd99ed_lpZm6ft7vWbflaUoZZkzGH?usp=sharing

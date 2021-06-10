@@ -1,4 +1,5 @@
 from command_handler import CommandHandler
+import sys
 
 #COMMANDS
 #compiler -l -f C:\Users\VITZ\Desktop\tester.pas
@@ -13,13 +14,5 @@ from command_handler import CommandHandler
 
 #compiler -p -d C:\Users\VITZ\Desktop\Parser
 
-def console():
-    print("Available commands:")
-    print()
-    print("compiler -l -f [filename]")
-    print("compiler -l -d [dirname]")
-    command = input(">")
-    CommandHandler().executeCommand(command)
-
 if __name__ == '__main__':
-    console()
+    CommandHandler().executeCommand(sys.argv)

@@ -8,8 +8,8 @@ class ExecuteParser:
         self.compilerParser()
 
     def compilerParser(self):
-        object_analysis = self.command_split[2]
-        path = self.command_split[3]
+        object_analysis = self.command_split[3]
+        path = self.command_split[4]
         if object_analysis == "-f":
             self.compilerParserFile(path)
         elif object_analysis == "-d":

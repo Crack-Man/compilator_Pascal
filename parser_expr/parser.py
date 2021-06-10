@@ -15,7 +15,7 @@ class Parser:
         operation = self.lexer.getCurrentLexem()
         while operation.getValue() == "+" or operation.getValue() == "-":
             self.lexer.getNextLexem()
-            right = self.parseExpr()
+            right = self.parseTerm()
             left = BinOpNode(operation, left, right)
             operation = self.lexer.getCurrentLexem()
         return left
@@ -47,10 +47,12 @@ class Parser:
                 token.negativeValue()
             return IntNode(token)
         if token.getValue() == "(":
+            if self.lexer.getCurrentLexem().getValue() == ")":
+                raise RuntimeError("Found ')' but expected expression")
             left = self.parseExpr()
             token = self.lexer.getCurrentLexem()
             if token.getValue() != ")":
                 raise RuntimeError("')' was expected")
             self.lexer.getNextLexem()
             return left
-        raise RuntimeError(f"Unexpected {token.getCode()}")
+        raise RuntimeError(f'Unexpected "{token.getCode()}"')

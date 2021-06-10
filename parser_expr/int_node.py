@@ -8,4 +8,4 @@ class IntNode(Node):
         return self.token.getValue()
 
     def print(self):
-        pass
+        return str(self.token.getValue())

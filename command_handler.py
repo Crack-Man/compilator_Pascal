@@ -1,5 +1,6 @@
 from lexer.execute_lexer import ExecuteLexer
 from parser_expr.execute_parser import ExecuteParser
+import os.path
 
 class CommandHandler:
     def __new__(cls):
@@ -7,16 +8,32 @@ class CommandHandler:
             cls.instance = super(CommandHandler, cls).__new__(cls)
         return cls.instance
 
-    def executeCommand(self, command):
-        self.command = command
-        command_lower = self.command[1].lower()
-        if command_lower == "compiler":
-            self.compiler()
-
-    def compiler(self):
-        if len(self.command) == 5:
-            type_working = self.command[2]
-            if type_working == "-l":
-                ExecuteLexer(self.command)
-            elif type_working == "-p":
-                ExecuteParser(self.command)
+    def checkCommand(self, commands):
+        type_working = 0
+        range_of_analysis = 0
+        path = ""
+        for command in commands:
+            command = command.lower()
+            if command == "-l":
+                type_working = 1
+            if command == "-p":
+                type_working = 2
+            if command == "-f":
+                range_of_analysis = 1
+            if command == "-d":
+                range_of_analysis = 2
+            if os.path.isfile(command) or os.path.isdir(command):
+                path = command
+        if type_working:
+            if range_of_analysis:
+                if path:
+                    if type_working == 1:
+                        ExecuteLexer(range_of_analysis, path)
+                    elif type_working == 2:
+                        ExecuteParser(range_of_analysis, path)
+                else:
+                    print("You have not entered the path")
+            else:
+                print("You have not entered the range of work (file '-f' or directory '-d')")
+        else:
+            print("You have not entered the type of work of the compiler (lexer '-l' or parser '-p'")

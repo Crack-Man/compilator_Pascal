@@ -2,42 +2,41 @@ import os.path
 from lexer.lexer import Lexer
 
 class ExecuteLexer:
-    def __init__(self, command_split):
-        self.command_split = command_split
+    def __init__(self, range_of_analysis, path):
+        self.range_of_analysis = range_of_analysis
+        self.path = path
         self.compilerLexer()
 
     def compilerLexer(self):
-        object_analysis = self.command_split[3]
-        path = self.command_split[4]
-        if object_analysis == "-f":
-            self.compilerLexerFile(path)
-        elif object_analysis == "-d":
-            self.compilerLexerDirectory(path)
+        if self.range_of_analysis == 1:
+            self.compilerLexerFile()
+        elif self.range_of_analysis == 2:
+            self.compilerLexerDirectory()
 
 
-    def compilerLexerFile(self, path):
-        if os.path.isfile(path):
+    def compilerLexerFile(self):
+        if os.path.isfile(self.path):
             try:
-                lexer = Lexer(path)
+                lexer = Lexer(self.path)
                 lex = lexer.getNextLexem()
                 print(lex.getParams())
                 while lex.notEOF():
                     lex = lexer.getNextLexem()
                     print(lex.getParams())
             except UnicodeDecodeError:
-                print(f"{path} 'utf-8' codec can't decode byte")
+                print(f"{self.path} 'utf-8' codec can't decode byte")
             except RuntimeError as e:
                 print(e)
 
-    def compilerLexerDirectory(self, path):
-        if os.path.isdir(path):
+    def compilerLexerDirectory(self):
+        if os.path.isdir(self.path):
             self.count_all = 0
             self.count_failed = 0
-            self.error_file = os.path.join(path, 'log.txt')
+            self.error_file = os.path.join(self.path, 'log.txt')
             self.error_list = ""
-            for file in os.listdir(path):
+            for file in os.listdir(self.path):
                 try:
-                    abs_path = os.path.join(path, file)
+                    abs_path = os.path.join(self.path, file)
                     self.testFileLexer(file, abs_path)
                 except UnicodeDecodeError:
                     print(f"{abs_path} 'utf-8' codec can't decode byte")

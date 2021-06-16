@@ -2,17 +2,18 @@ from command_handler import CommandHandler
 import sys
 
 #COMMANDS
-#compiler -l -f C:\Users\VITZ\Desktop\tester.pas
-#compiler -l -f C:\Users\VITZ\Desktop\tester.txt
-#compiler -l -f C:\Users\Crack\Desktop\test.txt
+#-l -f C:\Users\VITZ\Desktop\tester.txt
+#-l -f C:\Users\Crack\Desktop\test.txt
 
-#compiler -l -d C:\Users\VITZ\Desktop\Тесты
-#compiler -l -d C:\Users\VITZ\Desktop\Тесты-2
-#compiler -l -d C:\Users\Crack\Desktop\Тесты
+#-l -d C:\Users\VITZ\Desktop\Lexer
+#-l -d C:\Users\VITZ\Desktop\Тесты-2
+#-l -d C:\Users\Crack\Desktop\Тесты
 
-#compiler -p -f C:\Users\VITZ\Desktop\tester.txt
+#-p -f C:\Users\VITZ\Desktop\tester.txt
+#-p -f "C:\Users\Crack\Desktop\parser\14 (code).txt"
 
-#compiler -p -d C:\Users\VITZ\Desktop\Parser
+#-p -d C:\Users\VITZ\Desktop\Parser
+#-p -d C:\Users\Crack\Desktop\parser
 
 if __name__ == '__main__':
-    CommandHandler().executeCommand(sys.argv)
+    CommandHandler().checkCommand(sys.argv)

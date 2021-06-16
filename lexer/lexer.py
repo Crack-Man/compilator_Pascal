@@ -212,8 +212,12 @@ class Lexer:
                     self.keepSymbol()
         return self.returnedToken("", "EOF", "End of file", "End of file")
 
+
+    def getCurrentLexem(self):
+        return self.token
+
     def informError(self, text):
-        text = f'{self.path}        {self.coordinates}        ' + text
+        text = f'{self.coordinates}        ' + text
         raise RuntimeError(text)
 
     def keepSymbol(self, state=None, keep_coordinates=False):
@@ -251,7 +255,4 @@ class Lexer:
 
     def returnedToken(self, coordinates, type, code, value):
         self.token = Token(coordinates, type, code, value)
-        return self.token
-
-    def getCurrentLexem(self):
         return self.token

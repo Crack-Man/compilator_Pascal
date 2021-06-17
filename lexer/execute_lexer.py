@@ -1,5 +1,6 @@
 import os.path
 from lexer.lexer import Lexer
+from compiler_exception import CompilerException
 
 class ExecuteLexer:
     def __init__(self, range_of_analysis, path):
@@ -25,7 +26,7 @@ class ExecuteLexer:
                     print(lex.getParams())
             except UnicodeDecodeError:
                 print(f"{self.path} 'utf-8' codec can't decode byte")
-            except RuntimeError as e:
+            except CompilerException as e:
                 print(e)
 
     def compilerLexerDirectory(self):
@@ -55,7 +56,7 @@ class ExecuteLexer:
                 while lex.notEOF():
                     lex = lexer.getNextLexem()
                     self.compareResultLexer(lex.getParams(), file_res)
-            except RuntimeError as e:
+            except CompilerException as e:
                 self.compareResultLexer(str(e), file_res)
             finally:
                 if not self.passed:

@@ -1,6 +1,7 @@
 import os.path
 from lexer.lexer import Lexer
 from parser_expr.parser import Parser
+from compiler_exception import CompilerException
 
 class ExecuteParser:
     def __init__(self, range_of_analysis, path):
@@ -24,7 +25,7 @@ class ExecuteParser:
                 print(res)
             except UnicodeDecodeError:
                 print(f"{self.path} 'utf-8' codec can't decode byte")
-            except RuntimeError as e:
+            except CompilerException as e:
                 print(e)
         else:
             print("ERROR")
@@ -55,7 +56,7 @@ class ExecuteParser:
                 if res:
                     res = res.print()
                 self.compareResultParser(res, file_res)
-            except RuntimeError as e:
+            except CompilerException as e:
                 self.compareResultParser(str(e), file_res)
             finally:
                 if not self.passed:

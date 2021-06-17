@@ -1,5 +1,6 @@
 from lexer.token import Token
 from lexer.token_list import TokenList
+from compiler_exception import CompilerException
 
 class Lexer:
     def __init__(self, path):
@@ -17,6 +18,7 @@ class Lexer:
                            "false", "get", "input", "integer", "ln", "maxint", "new", "odd", "ord", "output",
                            "pack", "page", "pred", "put", "read", "readln", "real", "reset", "rewrite", "round",
                            "sin", "sqr", "sqrt", "succ", "text", "true", "trunc", "unpack", "write", "writeln"}
+        self.base_of_numbers = {16: '$', 8: '&', 2: '%'}
         self.space_symbols = {'', ' ', '\n', '\t', '\0', '\r'}
         self.operations = {'+', '-', '*', '/', '=', '<', '>', "div", "mod"}
         self.operations_arr = {'+', '-', '*', '/'}
@@ -40,6 +42,12 @@ class Lexer:
                     self.keepSymbol(state=TokenList.identifier, keep_coordinates=True)
                 elif self.symbol.isdigit():
                     self.keepSymbol(state=TokenList.integer, keep_coordinates=True)
+                elif self.symbol == '$':
+                    self.keepSymbol(state=TokenList.integer_16, keep_coordinates=True)
+                elif self.symbol == '&':
+                    self.keepSymbol(state=TokenList.integer_8, keep_coordinates=True)
+                elif self.symbol == '%':
+                    self.keepSymbol(state=TokenList.integer_2, keep_coordinates=True)
                 elif self.symbol == "'":
                     self.keepSymbol(state=TokenList.string, keep_coordinates=True)
                 elif self.symbol in self.operations:
@@ -79,10 +87,42 @@ class Lexer:
                     self.keepSymbol()
                 else:
                     self.state = TokenList.any
-                    if -32768 <= int(self.buf) <= 32767:
+                    if -2147483648 <= int(self.buf) <= 2147483647:
                         return self.returnedToken(self.coordinates, TokenList.integer.value, self.buf, int(self.buf))
                     else:
                         self.informError(f"Range check error while evaluating constants: {self.buf}")
+
+            elif self.state == TokenList.integer_16:
+                if self.symbol.isdigit():
+                    self.keepSymbol()
+                elif self.symbol.isalpha():
+                    if 'a' <= self.symbol.lower() <= 'f':
+                        self.keepSymbol()
+                    else:
+                        self.state = TokenList.error
+                        self.keepSymbol()
+                else:
+                    return self.tokenIntOtherFormats()
+
+            elif self.state == TokenList.integer_8:
+                if self.symbol.isdigit():
+                    if 0 <= int(self.symbol) <= 7:
+                        self.keepSymbol()
+                    else:
+                        self.state = TokenList.error
+                        self.keepSymbol()
+                else:
+                    return self.tokenIntOtherFormats()
+
+            elif self.state == TokenList.integer_2:
+                if self.symbol.isdigit():
+                    if 0 <= int(self.symbol) <= 1:
+                        self.keepSymbol()
+                    else:
+                        self.state = TokenList.error
+                        self.keepSymbol()
+                else:
+                    return self.tokenIntOtherFormats()
 
             elif self.state == TokenList.real:
                 if self.symbol.isdigit():
@@ -150,8 +190,11 @@ class Lexer:
 
             elif self.state == TokenList.operation:
                 if (self.buf in self.operations_arr or self.buf in self.operations_bool) and self.symbol == '=' \
-                        or self.buf == '*' and self.symbol == '*':
+                        or self.buf + self.symbol == "**":
                     self.keepSymbol()
+                elif self.buf + self.symbol == "//":
+                    self.keepSymbol()
+                    self.state = TokenList.comment
                 else:
                     self.state = TokenList.any
                     type_lexem = TokenList.assignment.value if self.buf in self.assignments else TokenList.operation.value
@@ -160,12 +203,15 @@ class Lexer:
             elif self.state == TokenList.separator:
                 self.state = TokenList.any
                 type_lexem = TokenList.separator.value
-                if self.buf == '.' and self.symbol == '.' or self.buf == ':' and self.symbol == '=':
+                if self.buf + self.symbol == ".." or self.buf + self.symbol == ":=":
                     self.addBuf()
                     if self.buf == ":=":
                         type_lexem = TokenList.assignment.value
                     self.getSymbol()
                     return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
+                elif self.buf + self.symbol == "(*":
+                    self.addBuf()
+                    self.state = TokenList.comment
                 elif self.buf == '.':
                     if self.symbol in self.space_symbols:
                         return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
@@ -176,20 +222,28 @@ class Lexer:
                     return self.returnedToken(self.coordinates, type_lexem, self.buf, self.buf)
 
             elif self.state == TokenList.comment:
-                if self.symbol == "$" and len(self.buf) == 1:
+                if self.symbol == '$' and len(self.buf) == 1:
                     self.state = TokenList.directive
                     self.keepSymbol()
-                elif self.symbol == "\n":
-                    self.addBuf()
-                    self.newLine()
-                    self.getSymbol()
-                elif self.symbol == "}":
+                elif self.buf[0] == '{' and self.symbol == '}' or self.buf[:2] == "(*" and \
+                        self.buf[len(self.buf)-1] + self.symbol == "*)":
                     self.state = TokenList.any
                     self.clearBuf()
                     self.getSymbol()
-                elif self.symbol == '':
+                elif self.buf[:2] == "//" and (not self.symbol or self.symbol == "\n"):
+                    self.state = TokenList.any
+                    self.clearBuf()
+                    self.newLine()
+                    self.getSymbol()
+                elif self.symbol == '\n':
+                    self.addBuf()
+                    self.newLine()
+                    self.getSymbol()
+                elif not self.symbol:
                     self.buf = self.buf.encode("unicode_escape").decode("utf-8")
-                    self.informError('End of file was encountered, but "}" was expected')
+                    self.col -= 1
+                    self.keepCoordinates()
+                    self.informError('End of file was encountered, but end of comment was expected')
                 else:
                     self.keepSymbol()
 
@@ -218,7 +272,7 @@ class Lexer:
 
     def informError(self, text):
         text = f'{self.coordinates}        ' + text
-        raise RuntimeError(text)
+        raise CompilerException(text)
 
     def keepSymbol(self, state=None, keep_coordinates=False):
         if state:
@@ -256,3 +310,24 @@ class Lexer:
     def returnedToken(self, coordinates, type, code, value):
         self.token = Token(coordinates, type, code, value)
         return self.token
+
+    def stringToNumber(self, s):
+        if len(s) == 1:
+            self.informError("Syntax error")
+        if s[0] in self.base_of_numbers.values():
+            base = self.getKey(self.base_of_numbers, s[0])
+            s = s[1:]
+        return int(s, base)
+
+    def getKey(self, d, value):
+        for k, v in d.items():
+            if v == value:
+                return k
+
+    def tokenIntOtherFormats(self):
+        self.state = TokenList.any
+        value = self.stringToNumber(self.buf)
+        if -2147483648 <= value <= 2147483647:
+            return self.returnedToken(self.coordinates, TokenList.integer.value, self.buf, value)
+        else:
+            self.informError(f"Range check error while evaluating constants: {self.buf}")

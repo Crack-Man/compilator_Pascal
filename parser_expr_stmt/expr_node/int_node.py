@@ -1,11 +1,11 @@
-from parser_expr.node import Node
+from parser_expr_stmt.expr_node.expr_node import ExprNode
 
-class IdntNode(Node):
+class IntNode(ExprNode):
     def __init__(self, token):
         self.token = token
 
     def getValue(self):
         return self.token.getValue()
 
-    def print(self):
+    def print(self, priority=None):
         return str(self.token.getValue())

@@ -1,5 +1,6 @@
 from lexer.execute_lexer import ExecuteLexer
-from parser_expr.execute_parser import ExecuteParser
+from parser_expr_stmt.execute_parser import ExecuteParser
+from parser_expr_stmt.execute_parser_stmt import ExecuteParserStmt
 import os.path
 
 class CommandHandler:
@@ -18,6 +19,8 @@ class CommandHandler:
                 type_working = 1
             if command == "-p":
                 type_working = 2
+            if command == "-ps":
+                type_working = 3
             if command == "-f":
                 range_of_analysis = 1
             if command == "-d":
@@ -31,6 +34,8 @@ class CommandHandler:
                         ExecuteLexer(range_of_analysis, path)
                     elif type_working == 2:
                         ExecuteParser(range_of_analysis, path)
+                    elif type_working == 3:
+                        ExecuteParserStmt(range_of_analysis, path)
                 else:
                     print("You have not entered the path")
             else:

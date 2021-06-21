@@ -8,19 +8,20 @@ class Lexer:
         self.file = open(self.path, "r", encoding="utf-8")
         self.symbol = self.file.read(1)
 
-        self.reserved = {"and", "array", "asm", "begin", "case", "const", "constructor", "destructor", "do",
+        self.reserved = {"array", "asm", "begin", "case", "const", "constructor", "destructor", "do",
                          "downto", "else", "end", "exports", "file", "for", "function", "goto", "if", "implementation",
-                         "in", "inherited", "inline", "interface", "label", "library", "nil", "not", "object",
-                         "of", "or", "packed", "procedure", "program", "record", "repeat", "set", "shl", "shr",
+                         "in", "inherited", "inline", "interface", "label", "library", "nil", "object",
+                         "of", "packed", "procedure", "program", "record", "repeat", "set", "shl", "shr",
                          "string", "then", "to", "type", "unit", "until", "uses", "var", "while", "with", "xor"}
         # predefined - предописанные слова
-        self.predefined = {"abs", "arctan", "boolean", "char", "chr", "cos", "dispose", "eof", "eoln", "exp",
-                           "false", "get", "input", "integer", "ln", "maxint", "new", "odd", "ord", "output",
-                           "pack", "page", "pred", "put", "read", "readln", "real", "reset", "rewrite", "round",
-                           "sin", "sqr", "sqrt", "succ", "text", "true", "trunc", "unpack", "write", "writeln"}
+        self.predefined = {"abs", "arctan", "boolean", "char", "cos", "dispose", "eof", "eoln", "exp",
+                           "false", "get", "input", "integer", "ln", "maxint", "new", "output",
+                           "pack", "page", "pred", "put", "read", "readln", "real", "reset", "rewrite",
+                           "sin", "sqr", "sqrt", "succ", "text", "true", "unpack", "write", "writeln"}
         self.base_of_numbers = {16: '$', 8: '&', 2: '%'}
         self.space_symbols = {'', ' ', '\n', '\t', '\0', '\r'}
-        self.operations = {'+', '-', '*', '/', '=', '<', '>', "div", "mod"}
+        self.operations = {'+', '-', '*', '/', '=', '<', '>', "div", "mod", "not", "and", "or", "ord", "chr", "sizeof", "pi",
+                           "int", "trunc", "round", "frac", "odd"}
         self.operations_arr = {'+', '-', '*', '/'}
         self.operations_bool = {'>', '<'}
         self.assignments = {":=", "+=", "-=", "*=", "/="}
@@ -87,7 +88,7 @@ class Lexer:
                     self.keepSymbol()
                 else:
                     self.state = TokenList.any
-                    if -2147483648 <= int(self.buf) <= 2147483647:
+                    if int(self.buf) <= 2147483647:
                         return self.returnedToken(self.coordinates, TokenList.integer.value, self.buf, int(self.buf))
                     else:
                         self.informError(f"Range check error while evaluating constants: {self.buf}")
@@ -145,9 +146,8 @@ class Lexer:
                         if 2.9e-39 <= float(self.buf) <= 1.7e38:
                             return self.returnedToken(self.coordinates, TokenList.real.value, self.buf, float(self.buf))
                         self.informError(f"Range check error while evaluating constants: {self.buf}")
-                    else:
-                        self.state = TokenList.error
-                        self.keepSymbol()
+                    self.state = TokenList.error
+                    self.keepSymbol()
 
             elif self.state == TokenList.real_e:
                 if self.symbol == '+' or self.symbol == '-' or self.symbol.isdigit():

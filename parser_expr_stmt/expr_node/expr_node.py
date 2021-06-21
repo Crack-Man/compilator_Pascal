@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from parser_expr_stmt.node import Node
 
-class Node(ABC):
+class ExprNode(Node, ABC):
     @abstractmethod
     def print(self):
         pass

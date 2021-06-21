@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class TokenList(Enum):
     any = "Any"
     reserved = "Reserved Word"

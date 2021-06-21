@@ -15,5 +15,7 @@ import sys
 #-p -d C:\Users\VITZ\Desktop\Parser
 #-p -d C:\Users\Crack\Desktop\parser
 
+#-ps -f C:\Users\VITZ\Desktop\tester.txt
+
 if __name__ == '__main__':
     CommandHandler().checkCommand(sys.argv)

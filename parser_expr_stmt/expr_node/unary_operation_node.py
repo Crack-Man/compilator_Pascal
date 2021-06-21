@@ -1,11 +1,11 @@
-from parser_expr.node import Node
+from parser_expr_stmt.expr_node.expr_node import ExprNode
 
-class UnOpNode(Node):
+class UnOpNode(ExprNode):
     def __init__(self, operation, operand):
         self.operation = operation
         self.operand = operand
 
-    def print(self, priority=1):
+    def print(self, priority=None):
         return f"{self.operation.getValue()}{self.operand.getValue()}"
 
     def getValue(self):

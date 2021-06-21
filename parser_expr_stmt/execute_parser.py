@@ -1,6 +1,6 @@
 import os.path
 from lexer.lexer import Lexer
-from parser_expr.parser import Parser
+from parser_expr_stmt.parser_expr import ParserExpr
 from compiler_exception import CompilerException
 
 class ExecuteParser:
@@ -19,7 +19,8 @@ class ExecuteParser:
         if os.path.isfile(self.path):
             try:
                 lexer = Lexer(self.path)
-                res = Parser(lexer).parseExpr()
+                lexer.getNextLexem()
+                res = ParserExpr(lexer).parseExpr()
                 if res:
                     res = res.print()
                 print(res)
@@ -52,7 +53,8 @@ class ExecuteParser:
             self.passed = True
             try:
                 lexer = Lexer(path)
-                res = Parser(lexer).parseExpr()
+                lexer.getNextLexem()
+                res = ParserExpr(lexer).parseExpr()
                 if res:
                     res = res.print()
                 self.compareResultParser(res, file_res)

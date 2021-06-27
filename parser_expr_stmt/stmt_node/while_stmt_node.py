@@ -10,7 +10,7 @@ class WhileStmtNode(StmtNode):
         cond = self.cond.print(priority=priority+1)
         body = self.body.print(priority=priority+1)
         return f"while\n{tab*priority}{cond}\n" \
-               f"do\n{tab*priority}{body}\n" \
+               f"{tab*(priority-1)}do\n{tab*priority}{body}" \
 
     def getValue(self):
         pass

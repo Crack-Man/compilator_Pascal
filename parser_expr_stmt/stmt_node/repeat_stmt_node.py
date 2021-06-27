@@ -11,8 +11,10 @@ class UntilStmtNode(StmtNode):
         nodes = ""
         for index, node in enumerate(self.body):
             nodes += f"{tab * priority if index else ''}{node.print(priority=priority + 1)}\n"
-        return f"repeat\n{tab*priority}{nodes}" \
-               f"until\n{tab*priority}{cond}\n" \
+        if nodes[len(nodes)-1:] == "\n":
+            nodes = nodes[:len(nodes)-1]
+        return f"repeat\n{tab*priority}{nodes}\n" \
+               f"until\n{tab*priority}{cond}" \
 
     def getValue(self):
         pass

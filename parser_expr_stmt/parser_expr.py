@@ -13,7 +13,7 @@ class ParserExpr:
     def parseExpr(self):
         token = self.lexer.getCurrentLexem()
         if not token.notEOF() or token.getValue() == ';':
-            raise CompilerException("Expected expression")
+            raise CompilerException(f"{token.getCoordinates()}        Expected expression")
         left = self.parseTerm()
         operation = self.lexer.getCurrentLexem()
         while operation.getValue() == "+" or operation.getValue() == "-":
@@ -49,7 +49,7 @@ class ParserExpr:
             left = self.parseExpr()
             token = self.lexer.getCurrentLexem()
             if token.getValue() != ")":
-                raise CompilerException("')' was expected")
+                raise CompilerException(f"{token.getCoordinates()}        ')' was expected")
             self.lexer.getNextLexem()
             return left
-        raise CompilerException(f'Unexpected "{token.getCode()}"')
+        raise CompilerException(f'{token.getCoordinates()}        Unexpected "{token.getCode()}"')

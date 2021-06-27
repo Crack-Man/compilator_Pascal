@@ -15,7 +15,7 @@ class ForStmtNode(StmtNode):
         body = self.body.print(priority=priority+1)
         return f"for\n{tab*priority}{start}\n" \
                f"{step}\n{tab*priority}{stop}\n" \
-               f"do\n{tab*priority}{body}\n" \
+               f"do\n{tab*priority}{body}" \
 
     def getValue(self):
         pass

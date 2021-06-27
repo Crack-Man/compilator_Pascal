@@ -107,7 +107,7 @@ class Lexer:
 
             elif self.state == TokenList.integer_8:
                 if self.symbol.isdigit():
-                    if 0 <= int(self.symbol) <= 7:
+                    if int(self.symbol) <= 7:
                         self.keepSymbol()
                     else:
                         self.state = TokenList.error
@@ -117,7 +117,7 @@ class Lexer:
 
             elif self.state == TokenList.integer_2:
                 if self.symbol.isdigit():
-                    if 0 <= int(self.symbol) <= 1:
+                    if int(self.symbol) <= 1:
                         self.keepSymbol()
                     else:
                         self.state = TokenList.error
@@ -262,9 +262,8 @@ class Lexer:
             elif self.state == TokenList.error:
                 if self.symbol in self.space_symbols or self.symbol in self.separators:
                     self.informError(f'Syntax error: "{self.buf}"')
-                else:
-                    self.keepSymbol()
-        return self.returnedToken("", "EOF", "End of file", "End of file")
+                self.keepSymbol()
+        return self.returnedToken(f"{self.line}:{self.col}", "EOF", "End of file", "End of file")
 
 
     def getCurrentLexem(self):

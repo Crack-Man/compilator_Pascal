@@ -13,8 +13,8 @@ class IfStmtNode(StmtNode):
         body = self.body.print(priority=priority+1)
         body_else = self.body_else.print(priority=priority+1)
         return f"if\n{tab*priority}{cond}\n" \
-               f"then\n{tab*priority}{body}\n" \
-               f"else\n{tab*priority}{body_else}"
+               f"{tab*(priority-1)}then\n{tab*priority}{body}\n" \
+               f"{tab*(priority-1)}else\n{tab*priority}{body_else}"
 
     def getValue(self):
         pass

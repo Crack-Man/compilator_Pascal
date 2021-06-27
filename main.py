@@ -17,5 +17,7 @@ import sys
 
 #-ps -f C:\Users\VITZ\Desktop\tester.txt
 
+#-ps -d C:\Users\VITZ\Desktop\Parser_Stmt
+
 if __name__ == '__main__':
     CommandHandler().checkCommand(sys.argv)

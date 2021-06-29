@@ -1,4 +1,5 @@
 from parser_expr_stmt.stmt_node.stmt_node import StmtNode
+from parser_expr_stmt.stmt_node.arr_stmt_node import ArrStmtNode
 from parser_expr_stmt.node import Node
 
 class VarStmtNode(StmtNode):
@@ -11,7 +12,8 @@ class VarStmtNode(StmtNode):
         var = f"{self.type_var}\n"
         for identifier in self.var.keys():
             data_type = self.var.get(identifier)
-            var += f"{tab*priority}{identifier.getValue()} : {data_type.getValue()}\n"
+            data_type = data_type.print() if isinstance(data_type, ArrStmtNode) else data_type.getValue()
+            var += f"{tab*priority}{identifier.getValue()} : {data_type}\n"
         if var[len(var)-1:] == "\n":
             var = var[:len(var)-1]
         return var

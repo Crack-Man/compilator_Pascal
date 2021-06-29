@@ -9,9 +9,9 @@ class AssignStmtNode(StmtNode):
 
     def print(self, priority=1):
         tab = super().getTab()
-        identifier = self.identifier.getValue()
+        identifier = self.identifier.getValue() if isinstance(self.identifier, Token) else self.identifier.print(priority=priority)
         value = self.value.print(priority=priority+1)
-        return f"{identifier} :=\n{tab*priority}{value}"
+        return f"{identifier}\n{tab*(priority-1)}:=\n{tab*priority}{value}"
 
     def getValue(self):
         pass
